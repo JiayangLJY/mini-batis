@@ -1,6 +1,11 @@
 package mini.batis.test;
 
+import static org.junit.Assert.*;
+
 import mini.batis.binding.MapperProxyFactory;
+import mini.batis.binding.MapperRegistry;
+import mini.batis.session.SqlSession;
+import mini.batis.session.defaults.DefaultSqlSessionFactory;
 import mini.batis.test.dao.IUserDao;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -14,24 +19,19 @@ public class ApiTest {
     private Logger logger = LoggerFactory.getLogger(ApiTest.class);
 
     @Test
-    public void test_MapperProxyFactory() {
-        MapperProxyFactory<IUserDao> factory = new MapperProxyFactory<>(IUserDao.class);
+    public void test_register_and_getMapper() {
+        // 注册 mappers
+        MapperRegistry registry = new MapperRegistry();
+        registry.addMappers("mini.batis.test.dao");
 
-        Map<String, String> sqlSession = new HashMap<>();
-        sqlSession.put("mini.batis.test.dao.IUserDao.queryUserName", "模拟执行 Mapper.xml 中 SQL 语句的操作：查询用户姓名");
-        sqlSession.put("mini.batis.mybatis.test.dao.IUserDao.queryUserAge", "模拟执行 Mapper.xml 中 SQL 语句的操作：查询用户年龄");
-        IUserDao userDao = factory.newInstance(sqlSession);
+        // 创建 SqlSessionFactory 并得到 SqlSession
+        final DefaultSqlSessionFactory sqlSessionFactory = new DefaultSqlSessionFactory(registry);
+        final SqlSession sqlSession = sqlSessionFactory.openSession();
 
-        String res = userDao.queryUserName("10001");
-        logger.info("测试结果：{}", res);
-    }
-
-    @Test
-    public void test_proxy_class() {
-        IUserDao userDao = (IUserDao) Proxy.newProxyInstance(
-                Thread.currentThread().getContextClassLoader(),
-                new Class[]{IUserDao.class},
-                (proxy, method, args) -> "你被代理了！");
-        System.out.println(userDao.queryUserName("0001"));
+        // 通过 SqlSession 获取 Mapper(代理类)
+        final IUserDao userDao = sqlSession.getMapper(IUserDao.class);
+        // 代理mapper 调用 SqlSession 统一提供的方法进行查询
+        final String s = userDao.queryUserName("001");
+        System.out.println(s);
     }
 }
