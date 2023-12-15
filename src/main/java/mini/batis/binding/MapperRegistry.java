@@ -1,6 +1,7 @@
 package mini.batis.binding;
 
 import cn.hutool.core.lang.ClassScanner;
+import mini.batis.session.Configuration;
 import mini.batis.session.SqlSession;
 
 import java.util.HashMap;
@@ -8,6 +9,15 @@ import java.util.Map;
 import java.util.Set;
 
 public class MapperRegistry {
+    private Configuration config;
+
+    public MapperRegistry(Configuration config) {
+        this.config = config;
+    }
+
+    /**
+     * mapperClass : MapperProxyFactory
+     */
     private final Map<Class<?>, MapperProxyFactory<?>> knownMappers = new HashMap<>();
 
     /**
