@@ -2,13 +2,16 @@ package mini.batis.test;
 
 import static org.junit.Assert.*;
 
-import mini.batis.binding.MapperProxyFactory;
-import mini.batis.binding.MapperRegistry;
+import com.alibaba.fastjson.JSON;
+import mini.batis.builder.xml.XMLConfigBuilder;
 import mini.batis.io.Resources;
+import mini.batis.session.Configuration;
 import mini.batis.session.SqlSession;
 import mini.batis.session.SqlSessionFactory;
 import mini.batis.session.SqlSessionFactoryBuilder;
+import mini.batis.session.defaults.DefaultSqlSession;
 import mini.batis.test.dao.IUserDao;
+import mini.batis.test.po.User;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +33,23 @@ public class ApiTest {
         IUserDao userDao = sqlSession.getMapper(IUserDao.class);
 
         // 3. 测试验证
-        String res = userDao.queryUserInfoById("10001");
-        logger.info("测试结果：{}", res);
+        User user = userDao.queryUserInfoById(1L);
+        logger.info("测试结果：{}", JSON.toJSONString(user));
+    }
+
+    @Test
+    public void test_selectOne() throws IOException {
+        // 解析 XML
+        Reader reader = Resources.getResourceAsReader("mybatis-config-datasource.xml");
+        XMLConfigBuilder xmlConfigBuilder = new XMLConfigBuilder(reader);
+        Configuration configuration = xmlConfigBuilder.parse();
+
+        // 获取 DefaultSqlSession
+        SqlSession sqlSession = new DefaultSqlSession(configuration);
+
+        // 执行查询：默认是一个集合参数
+        Object[] req = {1L};
+        Object res = sqlSession.selectOne("mini.batis.test.dao.IUserDao.queryUserInfoById", req);
+        logger.info("测试结果：{}", JSON.toJSONString(res));
     }
 }

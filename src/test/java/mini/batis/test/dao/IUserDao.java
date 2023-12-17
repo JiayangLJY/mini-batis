@@ -1,8 +1,10 @@
 package mini.batis.test.dao;
 
+import mini.batis.test.po.User;
+
 public interface IUserDao {
 
-    String queryUserInfoById(String uId);
+    User queryUserInfoById(Long uId);
 
 }
 
